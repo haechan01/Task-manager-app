@@ -79,21 +79,23 @@ def get_tasks(current_user, list_id):
     except Exception as e:
         return jsonify({'error': str(e)}), 400
 
-@tasks.route('/lists/<int:list_id>/tasks', methods=['POST', 'OPTIONS'])
+@tasks.route('/lists/<int:list_id>/tasks', methods=['POST'])
 @token_required
 def create_task(current_user, list_id):
-    if request.method == 'OPTIONS':
-        return jsonify({}), 200
-        
     try:
-        todo_list = TodoList.query.filter_by(id=list_id, user_id=current_user.id).first_or_404()
-        data = request.get_json()
+        todo_list = TodoList.query.filter_by(id=list_id, user_id=current_user.id).first()
         
+        if not todo_list:
+            return jsonify({'error': f'List with id {list_id} not found'}), 404
+            
+        data = request.get_json()
+        if not data or 'title' not in data:
+            return jsonify({'error': 'Title is required'}), 400
+            
         new_task = Task(
             title=data['title'],
             description=data.get('description', ''),
             list_id=list_id,
-            parent_id=data.get('parent_id'),
             user_id=current_user.id,
             is_expanded=True
         )
@@ -101,11 +103,13 @@ def create_task(current_user, list_id):
         db.session.add(new_task)
         db.session.commit()
         
+        # Return the created task
         return jsonify(new_task.to_dict()), 201
         
     except Exception as e:
         db.session.rollback()
-        return jsonify({'error': str(e)}), 400
+        print(f"Error creating task: {str(e)}")  # Debug print
+        return jsonify({'error': str(e)}), 500
 
 @tasks.route('/tasks/<int:task_id>', methods=['GET'])
 @token_required
