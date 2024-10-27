@@ -1,11 +1,9 @@
 from flask import Blueprint, request, jsonify
 from werkzeug.security import generate_password_hash, check_password_hash
 from models import db, User
-from flask_cors import cross_origin
-import jwt
 from functools import wraps
-from datetime import datetime, timedelta
-from flask import current_app
+import jwt
+import datetime
 
 auth_blueprint = Blueprint('auth', __name__)
 
@@ -22,7 +20,7 @@ def token_required(f):
             return jsonify({'message': 'Token is missing'}), 401
 
         try:
-            data = jwt.decode(token, current_app.config['SECRET_KEY'], algorithms=["HS256"])
+            data = jwt.decode(token, 'your-secret-key-here', algorithms=["HS256"])
             current_user = User.query.get(data['user_id'])
             if not current_user:
                 return jsonify({'message': 'Invalid token'}), 401
@@ -33,7 +31,6 @@ def token_required(f):
     return decorated
 
 @auth_blueprint.route('/signup', methods=['POST'])
-@cross_origin()
 def signup():
     try:
         data = request.get_json()
@@ -63,15 +60,9 @@ def signup():
         db.session.add(new_user)
         db.session.commit()
 
-        token = jwt.encode({
-            'user_id': new_user.id,
-            'exp': datetime.utcnow() + timedelta(days=1)
-        }, current_app.config['SECRET_KEY'])
-
         return jsonify({
             'message': 'User created successfully',
-            'token': token,
-            'user': {'id': new_user.id, 'username': new_user.username}
+            'username': username
         }), 201
 
     except Exception as e:
@@ -79,10 +70,12 @@ def signup():
         return jsonify({'message': str(e)}), 500
 
 @auth_blueprint.route('/login', methods=['POST'])
-@cross_origin()
 def login():
     try:
         data = request.get_json()
+        if not data:
+            return jsonify({'message': 'No input data provided'}), 400
+
         username = data.get('username')
         password = data.get('password')
 
@@ -96,13 +89,16 @@ def login():
 
         token = jwt.encode({
             'user_id': user.id,
-            'exp': datetime.utcnow() + timedelta(days=1)
-        }, current_app.config['SECRET_KEY'])
+            'exp': datetime.datetime.utcnow() + datetime.timedelta(days=1)
+        }, 'your-secret-key-here', algorithm="HS256")
 
         return jsonify({
             'message': 'Login successful',
             'token': token,
-            'user': {'id': user.id, 'username': user.username}
+            'user': {
+                'id': user.id,
+                'username': user.username
+            }
         }), 200
 
     except Exception as e:
@@ -111,12 +107,10 @@ def login():
 @auth_blueprint.route('/me', methods=['GET'])
 @token_required
 def get_current_user(current_user):
-    return jsonify({
-        'id': current_user.id,
-        'username': current_user.username
-    }), 200
-
-@auth_blueprint.route('/logout', methods=['POST'])
-@token_required
-def logout(current_user):
-    return jsonify({'message': 'Successfully logged out'}), 200
+    try:
+        return jsonify({
+            'id': current_user.id,
+            'username': current_user.username
+        }), 200
+    except Exception as e:
+        return jsonify({'message': str(e)}), 500
