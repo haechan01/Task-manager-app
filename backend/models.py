@@ -2,7 +2,6 @@ from datetime import datetime
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import relationship
 
-
 db = SQLAlchemy()
 
 class User(db.Model):
@@ -12,41 +11,46 @@ class User(db.Model):
     username = db.Column(db.String(80), unique=True, nullable=False)
     password_hash = db.Column(db.String(120), nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    lists = relationship('TodoList', backref='user', lazy=True)
 
-    def __repr__(self):
-        return f'<User {self.username}>'
-
-class TaskList(db.Model):
-    __tablename__ = 'task_lists'
+class TodoList(db.Model):
+    __tablename__ = 'todo_lists'
     
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(100), nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     
-    tasks = relationship('Task', backref='task_list', lazy=True,
-                        primaryjoin="and_(TaskList.id==Task.list_id, Task.parent_id==None)")
+    tasks = relationship('Task', backref='todo_list', 
+                        primaryjoin="and_(TodoList.id==Task.list_id, Task.parent_id==None)",
+                        lazy=True)
 
 class Task(db.Model):
     __tablename__ = 'tasks'
     
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(200), nullable=False)
+    description = db.Column(db.Text, nullable=True)
     completed = db.Column(db.Boolean, default=False)
-    list_id = db.Column(db.Integer, db.ForeignKey('task_lists.id'), nullable=False)
+    list_id = db.Column(db.Integer, db.ForeignKey('todo_lists.id'), nullable=False)
     parent_id = db.Column(db.Integer, db.ForeignKey('tasks.id'))
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    is_expanded = db.Column(db.Boolean, default=True)
     
-    subtasks = relationship('Task', backref=db.backref('parent', remote_side=[id]),
+    subtasks = relationship('Task', 
+                          backref=db.backref('parent', remote_side=[id]),
                           cascade='all, delete-orphan')
     
     def to_dict(self, include_subtasks=True):
         result = {
             'id': self.id,
             'title': self.title,
+            'description': self.description,
             'completed': self.completed,
             'list_id': self.list_id,
+            'is_expanded': self.is_expanded,
             'created_at': self.created_at.isoformat()
         }
         if include_subtasks and self.subtasks:
