@@ -147,18 +147,43 @@ def update_task(current_user, task_id):
         db.session.rollback()
         return jsonify({'error': str(e)}), 400
 
-@tasks.route('/tasks/<int:task_id>', methods=['DELETE'])
+@tasks.route('delete/<int:task_id>', methods=['DELETE'])
 @token_required
 def delete_task(current_user, task_id):
     try:
-        task = Task.query.filter_by(id=task_id, user_id=current_user.id).first_or_404()
+        # First, verify the task exists and belongs to the current user
+        task = Task.query.filter_by(id=task_id, user_id=current_user.id).first()
+        
+        if not task:
+            return jsonify({'error': f'Task with id {task_id} not found'}), 404
+            
+        # Find the list this task belongs to
+        todo_list = TodoList.query.filter_by(id=task.list_id, user_id=current_user.id).first()
+        
+        if not todo_list:
+            return jsonify({'error': 'Associated list not found'}), 404
+
+        # Delete any subtasks first
+        if hasattr(task, 'subtasks'):
+            for subtask in task.subtasks:
+                db.session.delete(subtask)
+
+        # Delete the task
         db.session.delete(task)
         db.session.commit()
-        return jsonify({'message': 'Task deleted successfully'})
+        
+        # Return success response
+        return jsonify({
+            'message': 'Task deleted successfully',
+            'id': task_id,
+            'list_id': task.list_id
+        }), 200
+        
     except Exception as e:
         db.session.rollback()
-        return jsonify({'error': str(e)}), 400
-
+        print(f"Error deleting task: {str(e)}")  # Debug print
+        return jsonify({'error': str(e)}), 500
+    
 @tasks.route('/tasks/<int:task_id>/toggle', methods=['PUT'])
 @token_required
 def toggle_task(current_user, task_id):
@@ -171,7 +196,7 @@ def toggle_task(current_user, task_id):
         db.session.rollback()
         return jsonify({'error': str(e)}), 400
 
-@tasks.route('/tasks/<int:task_id>/subtasks', methods=['POST'])
+@tasks.route('/subtask/<int:task_id>/subtasks', methods=['POST'])
 @token_required
 def create_subtask(current_user, task_id):
     try:
@@ -231,3 +256,52 @@ def bad_request_error(error):
 def internal_error(error):
     db.session.rollback()
     return jsonify({'error': 'Internal server error'}), 500
+
+# Test route to get all data
+@tasks.route('/test/all', methods=['GET'])
+def test_get_all():
+    try:
+        # Get all lists
+        lists = TodoList.query.all()
+        lists_data = []
+        
+        for lst in lists:
+            tasks = Task.query.filter_by(list_id=lst.id).all()
+            lists_data.append({
+                'list_id': lst.id,
+                'title': lst.title,
+                'user_id': lst.user_id,
+                'created_at': lst.created_at.isoformat(),
+                'tasks': [{
+                    'id': task.id,
+                    'title': task.title,
+                    'completed': task.completed,
+                    'created_at': task.created_at.isoformat()
+                } for task in tasks]
+            })
+            
+        return jsonify({
+            'lists': lists_data
+        })
+    except Exception as e:
+        print(f"Error in test route: {str(e)}")
+        return jsonify({'error': str(e)}), 500
+
+# Test route to get a specific task
+@tasks.route('/test/task/<int:task_id>', methods=['GET'])
+def test_get_task(task_id):
+    try:
+        task = Task.query.get(task_id)
+        if task:
+            return jsonify({
+                'id': task.id,
+                'title': task.title,
+                'list_id': task.list_id,
+                'user_id': task.user_id,
+                'completed': task.completed,
+                'created_at': task.created_at.isoformat()
+            })
+        return jsonify({'message': 'Task not found'}), 404
+    except Exception as e:
+        print(f"Error in test route: {str(e)}")
+        return jsonify({'error': str(e)}), 500
