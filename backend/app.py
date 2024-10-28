@@ -1,4 +1,4 @@
-from flask import Flask, jsonify
+from flask import Flask
 from flask_cors import CORS
 from models import db
 from routes.auth_routes import auth_blueprint
@@ -18,16 +18,8 @@ app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{db_path}'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SECRET_KEY'] = 'your-secret-key-here'
 
-# Updated CORS configuration
-CORS(app, 
-    resources={r"/api/*": {
-        "origins": ["http://localhost:3000"],
-        "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-        "allow_headers": ["Content-Type", "Authorization", "Access-Control-Allow-Credentials"],
-        "expose_headers": ["Content-Type", "Authorization"],
-        "supports_credentials": True,
-        "max_age": 600
-    }})
+# Simple CORS configuration
+CORS(app)
 
 # Initialize extensions
 db.init_app(app)
@@ -37,14 +29,14 @@ app.register_blueprint(auth_blueprint, url_prefix='/api/auth')
 app.register_blueprint(tasks, url_prefix='/api/tasks')
 
 # Create database tables
-def init_db():
-    with app.app_context():
-        if not os.path.exists(db_path):
-            db.create_all()
-            os.chmod(db_path, 0o666)
-            os.chmod(instance_dir, 0o777)
-
-init_db()
-
+with app.app_context():
+    if not os.path.exists(db_path):
+        db.create_all()
+        os.chmod(db_path, 0o666)
+# Near the end of app.py, add this debug print
+print("Registered routes:")
+for rule in app.url_map.iter_rules():
+    print(rule)
+    
 if __name__ == '__main__':
     app.run(debug=True)
