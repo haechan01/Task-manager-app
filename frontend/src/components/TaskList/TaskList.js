@@ -12,7 +12,7 @@ const TaskList = ({
   onTaskComplete,
   onTaskEdit,
   onTaskDelete,
-  onAddSubtask,
+  onSubtaskAdd, // Changed prop name here
   onTaskMove,
   onCompleteSubtask
 }) => {
@@ -45,7 +45,7 @@ const TaskList = ({
             onComplete={onTaskComplete}
             onEdit={onTaskEdit}
             onDelete={onTaskDelete}
-            onAddSubtask={onAddSubtask}
+            onAddSubtask={onSubtaskAdd} // Pass the prop to Task component
             onMove={onTaskMove}
             listId={listId}
             onSubtaskComplete={onCompleteSubtask}
@@ -98,14 +98,13 @@ TaskList.propTypes = {
   onTaskComplete: PropTypes.func.isRequired,
   onTaskEdit: PropTypes.func.isRequired,
   onTaskDelete: PropTypes.func.isRequired,
-  onAddSubtask: PropTypes.func,
+  onSubtaskAdd: PropTypes.func.isRequired, // Updated prop name and made it required
   onTaskMove: PropTypes.func,
   onCompleteSubtask: PropTypes.func.isRequired
 };
 
 TaskList.defaultProps = {
   tasks: [],
-  onAddSubtask: () => {},
   onTaskMove: () => {}
 };
 

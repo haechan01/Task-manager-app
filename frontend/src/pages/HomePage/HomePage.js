@@ -67,18 +67,19 @@ const HomePage = () => {
       if (task.id === parentId) {
         return {
           ...task,
+          is_expanded: true,
           subtasks: [...(task.subtasks || []), newSubtask]
         };
-      }
-      if (task.subtasks) {
+      } else if (task.subtasks && task.subtasks.length > 0) {
         return {
           ...task,
-          subtasks: updateTaskWithNewSubtask(task.subtasks, parentId, newSubtask)
+          subtasks: updateTaskWithNewSubtask([...task.subtasks], parentId, newSubtask)
         };
       }
       return task;
     });
   };
+  
 
   const removeTaskAndSubtasks = (tasks, taskId) => {
     return tasks.filter(task => {
@@ -211,19 +212,21 @@ const HomePage = () => {
       }
 
       const newTask = await response.json();
-      console.log('Created task:', newTask);
 
-      setLists(currentLists =>
-        currentLists.map(list =>
-          list.id === listId
-            ? { ...list, tasks: [...(list.tasks || []), newTask] }
-            : list
-        )
-      );
-    } catch (error) {
-      console.error('Error creating task:', error);
-    }
-  };
+    // Initialize subtasks as an empty array if undefined
+    newTask.subtasks = newTask.subtasks || [];
+
+    setLists(currentLists =>
+      currentLists.map(list =>
+        list.id === listId
+          ? { ...list, tasks: [...(list.tasks || []), newTask] }
+          : list
+      )
+    );
+  } catch (error) {
+    console.error('Error creating task:', error);
+  }
+};
 
   /**
    * Toggles task expansion (show/hide subtasks)
@@ -399,53 +402,51 @@ const HomePage = () => {
    */
   const handleAddSubtask = async (taskId, title) => {
     try {
-      const parentTask = findTaskInLists(lists, taskId);
-      if (!parentTask) {
-        throw new Error('Parent task not found');
-      }
-
-      // Check nesting level
-      const level = getTaskLevel(parentTask);
-      if (level >= MAX_SUBTASK_LEVEL - 1) {
-        throw new Error('Maximum nesting level reached');
-      }
-
-      const response = await fetch(
-        `http://127.0.0.1:5000/api/tasks/add/${taskId}/subtasks/create`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`
-          },
-          body: JSON.stringify({
-            title,
-            description: ''
-          })
-        }
-      );
-
+      console.log('Starting subtask creation:', { taskId, title });  // Debug log
+      
+      const response = await fetch(`http://127.0.0.1:5000/api/tasks/add/${taskId}/subtasks/create`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ 
+          title,
+          description: ''
+        })
+      });
+  
+      console.log('Response status:', response.status);  // Debug log
+  
       if (!response.ok) {
         const errorData = await response.json();
+        console.error('Server error:', errorData);  // Debug log
         throw new Error(errorData.error || 'Failed to add subtask');
       }
-
+  
       const newSubtask = await response.json();
-      console.log('Created subtask:', newSubtask);
-
-      setLists(currentLists =>
-        currentLists.map(list => ({
+      console.log('Response data:', newSubtask);  // Debug log
+  
+      // Initialize subtasks as an empty array if undefined
+      newSubtask.subtasks = newSubtask.subtasks || [];
+  
+      // Update state with new subtask
+      setLists(currentLists => {
+        const updatedLists = currentLists.map(list => ({
           ...list,
           tasks: updateTaskWithNewSubtask(list.tasks, taskId, newSubtask)
-        }))
-      );
-
-      // Update parent task's completion fraction
-      updateTaskCompletionFraction(taskId);
+        }));
+        console.log('Updated lists after adding subtask:', updatedLists); // Debug log
+        return updatedLists;
+      });
+  
+      // Log the final state update
+      console.log('Subtask added successfully:', newSubtask);
     } catch (error) {
       console.error('Error adding subtask:', error);
     }
   };
+  
 
   /**
    * Updates the completion status of a task and all its subtasks
