@@ -120,7 +120,7 @@ def get_task(current_user, task_id):
     except Exception as e:
         return jsonify({'error': str(e)}), 400
 
-@tasks.route('/tasks/<int:task_id>', methods=['PUT'])
+@tasks.route('/update/<int:task_id>', methods=['PUT'])
 @token_required
 def update_task(current_user, task_id):
     try:
@@ -147,7 +147,7 @@ def update_task(current_user, task_id):
         db.session.rollback()
         return jsonify({'error': str(e)}), 400
 
-@tasks.route('delete/<int:task_id>', methods=['DELETE'])
+@tasks.route('/delete/<int:task_id>', methods=['DELETE'])
 @token_required
 def delete_task(current_user, task_id):
     try:
@@ -184,7 +184,7 @@ def delete_task(current_user, task_id):
         print(f"Error deleting task: {str(e)}")  # Debug print
         return jsonify({'error': str(e)}), 500
     
-@tasks.route('/tasks/<int:task_id>/toggle', methods=['PUT'])
+@tasks.route('/toggle/<int:task_id>', methods=['PUT'])
 @token_required
 def toggle_task(current_user, task_id):
     try:
@@ -196,12 +196,16 @@ def toggle_task(current_user, task_id):
         db.session.rollback()
         return jsonify({'error': str(e)}), 400
 
-@tasks.route('/subtask/<int:task_id>/subtasks', methods=['POST'])
+# Create subtask (existing route, but renamed for consistency)
+@tasks.route('add/<int:task_id>/subtasks/create', methods=['POST'])
 @token_required
 def create_subtask(current_user, task_id):
     try:
         parent_task = Task.query.filter_by(id=task_id, user_id=current_user.id).first_or_404()
         data = request.get_json()
+        
+        if not data or 'title' not in data:
+            return jsonify({'error': 'Title is required'}), 400
         
         subtask = Task(
             title=data['title'],
@@ -221,10 +225,65 @@ def create_subtask(current_user, task_id):
         db.session.rollback()
         return jsonify({'error': str(e)}), 400
 
-@tasks.route('/tasks/move/<int:task_id>', methods=['PUT'])
+# Update subtask
+@tasks.route('update/<int:task_id>/subtasks/update/<int:subtask_id>', methods=['PUT'])
+@token_required
+def update_subtask(current_user, task_id, subtask_id):
+    try:
+        # Verify parent task exists and belongs to user
+        parent_task = Task.query.filter_by(id=task_id, user_id=current_user.id).first_or_404()
+        
+        # Verify subtask exists and belongs to this parent
+        subtask = Task.query.filter_by(
+            id=subtask_id, 
+            user_id=current_user.id,
+            parent_id=task_id
+        ).first_or_404()
+
+        data = request.get_json()
+        if 'title' in data:
+            subtask.title = data['title']
+        if 'completed' in data:
+            subtask.completed = data['completed']
+            
+        db.session.commit()
+        return jsonify(subtask.to_dict())
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 400
+
+# Delete subtask
+@tasks.route('delete/<int:task_id>/subtasks/delete/<int:subtask_id>', methods=['DELETE'])
+@token_required
+def delete_subtask(current_user, task_id, subtask_id):
+    try:
+        # Verify parent task exists and belongs to user
+        parent_task = Task.query.filter_by(id=task_id, user_id=current_user.id).first_or_404()
+        
+        # Verify subtask exists and belongs to this parent
+        subtask = Task.query.filter_by(
+            id=subtask_id, 
+            user_id=current_user.id,
+            parent_id=task_id
+        ).first_or_404()
+
+        db.session.delete(subtask)
+        db.session.commit()
+        
+        return jsonify({
+            'message': 'Subtask deleted successfully',
+            'id': subtask_id
+        }), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 400
+
+
+@tasks.route('/move/<int:task_id>', methods=['PUT'])
 @token_required
 def move_task(current_user, task_id):
     try:
+        # Fetch the task to be moved
         task = Task.query.filter_by(id=task_id, user_id=current_user.id).first_or_404()
         data = request.get_json()
         
@@ -233,15 +292,28 @@ def move_task(current_user, task_id):
         
         # Only allow moving top-level tasks
         if task.parent_id is None:
+            # Update the task's list_id
             task.list_id = target_list.id
+            
+            # Recursively update list_id for all subtasks
+            def update_subtasks_list_id(task):
+                for subtask in task.subtasks:
+                    subtask.list_id = target_list.id
+                    update_subtasks_list_id(subtask)
+            
+            update_subtasks_list_id(task)
             db.session.commit()
-            return jsonify(task.to_dict())
+            
+            # Fetch the updated task with subtasks
+            updated_task = Task.query.filter_by(id=task.id).first()
+            return jsonify(updated_task.to_dict(include_subtasks=True))
         else:
             return jsonify({'error': 'Can only move top-level tasks'}), 400
-            
+                
     except Exception as e:
         db.session.rollback()
         return jsonify({'error': str(e)}), 400
+
 
 # Error handlers
 @tasks.errorhandler(404)
