@@ -278,6 +278,73 @@ def delete_subtask(current_user, task_id, subtask_id):
         db.session.rollback()
         return jsonify({'error': str(e)}), 400
 
+@tasks.route('/tasks/complete/subtask/<int:subtask_id>', methods=['PUT'])
+@token_required
+def complete_subtask(current_user, subtask_id):
+    try:
+        # Find the subtask and verify ownership
+        subtask = Task.query.filter_by(id=subtask_id, user_id=current_user.id).first()
+        
+        if not subtask:
+            return jsonify({'error': 'Subtask not found'}), 404
+
+        # Update subtask completion status
+        data = request.get_json()
+        subtask.completed = data.get('completed', True)
+        
+        # Update parent task's completion fraction
+        if subtask.parent_id:
+            parent_task = Task.query.get(subtask.parent_id)
+            if parent_task:
+                # Calculate new completion fraction
+                all_subtasks = Task.query.filter_by(parent_id=parent_task.id).all()
+                completed_count = sum(1 for st in all_subtasks if st.completed)
+                total_count = len(all_subtasks)
+                parent_task.completion_fraction = f"{completed_count}/{total_count}"
+
+        db.session.commit()
+
+        return jsonify({
+            'id': subtask.id,
+            'completed': subtask.completed,
+            'parent_id': subtask.parent_id,
+            'title': subtask.title,
+            'completion_fraction': parent_task.completion_fraction if subtask.parent_id else None
+        }), 200
+        
+    except Exception as e:
+        db.session.rollback()
+        print(f"Error updating subtask completion: {str(e)}")
+        return jsonify({'error': str(e)}), 500
+
+@tasks.route('/tasks/delete/<int:task_id>', methods=['DELETE'])
+@token_required
+def delete_completed_task(current_user, task_id):
+    try:
+        # Find the task and verify ownership
+        task = Task.query.filter_by(id=task_id, user_id=current_user.id).first()
+        
+        if not task:
+            return jsonify({'error': 'Task not found'}), 404
+
+        # Find and delete all subtasks first
+        subtasks = Task.query.filter_by(parent_id=task_id).all()
+        for subtask in subtasks:
+            db.session.delete(subtask)
+
+        # Delete the main task
+        db.session.delete(task)
+        db.session.commit()
+
+        return jsonify({
+            'message': 'Task and its subtasks deleted successfully',
+            'id': task_id
+        }), 200
+        
+    except Exception as e:
+        db.session.rollback()
+        print(f"Error deleting task: {str(e)}")
+        return jsonify({'error': str(e)}), 500
 
 @tasks.route('/move/<int:task_id>', methods=['PUT'])
 @token_required
