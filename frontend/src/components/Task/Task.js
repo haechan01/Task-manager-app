@@ -37,27 +37,31 @@ const Task = ({
     }
   };
 
-  const handleAddSubtask = (e) => {
+  const handleSubtaskFormSubmit = async (e) => {
     e.preventDefault();
+    console.log('handleSubtaskFormSubmit called'); // Debugging
+
     if (newSubtaskTitle.trim()) {
-      // Check if we've reached maximum nesting level (3)
       if (level >= 2) {
         alert('Maximum nesting level reached');
         return;
       }
-      onAddSubtask(task.id, newSubtaskTitle);
+      await onAddSubtask(task.id, newSubtaskTitle);
       setNewSubtaskTitle('');
       setIsAddingSubtask(false);
+
+      // Ensure the task is expanded to show the new subtask
+      if (!task.is_expanded) {
+        onToggle(task.id);
+      }
     }
   };
 
   const handleCheckboxClick = (e) => {
-    e.stopPropagation();  // Prevent event bubbling
+    e.stopPropagation();
     if (level === 0) {
-      // If it's a top-level task, delete it
       onComplete(task.id);
-    } else if (onSubtaskComplete) {  // Check if handler exists
-      // If it's a subtask, mark it as complete
+    } else if (onSubtaskComplete) {
       onSubtaskComplete(task.parent_id, task.id);
     }
   };
@@ -67,7 +71,7 @@ const Task = ({
       <div className={`task-card ${level > 0 ? 'subtask' : ''} ${task.completed ? 'completed' : ''}`}>
         <div className="task-content">
           <div className="task-left">
-            {task.subtasks?.length > 0 && (
+            {(task.subtasks?.length > 0 || isAddingSubtask) && (
               <button 
                 onClick={() => onToggle(task.id)} 
                 className={`toggle-button ${task.is_expanded ? 'expanded' : ''}`}
@@ -114,7 +118,7 @@ const Task = ({
           </div>
 
           <div className="task-right">
-            {task.subtasks?.length > 0 && (
+            {calculateCompletion() && (
               <span className="task-completion">
                 {calculateCompletion()}
               </span>
@@ -137,12 +141,14 @@ const Task = ({
                 </button>
               )}
 
-              <button 
-                onClick={() => setIsAddingSubtask(true)} 
-                className="action-button"
-              >
-                <Plus size={16} />
-              </button>
+              {level < 2 && (
+                <button 
+                  onClick={() => setIsAddingSubtask(true)} 
+                  className="action-button"
+                >
+                  <Plus size={16} />
+                </button>
+              )}
 
               <button 
                 onClick={() => onDelete(task.id)} 
@@ -155,7 +161,7 @@ const Task = ({
         </div>
 
         {isAddingSubtask && (
-          <form onSubmit={handleAddSubtask} className="add-subtask-form">
+          <form onSubmit={handleSubtaskFormSubmit} className="add-subtask-form">
             <input
               type="text"
               value={newSubtaskTitle}
@@ -178,9 +184,9 @@ const Task = ({
         )}
       </div>
       
-      {task.is_expanded && task.subtasks?.length > 0 && (
+      {task.is_expanded && (
         <div className="subtasks-container">
-          {task.subtasks.map(subtask => (
+          {task.subtasks && task.subtasks.map(subtask => (
             <Task
               key={subtask.id}
               task={subtask}
@@ -215,7 +221,7 @@ Task.propTypes = {
   onComplete: PropTypes.func.isRequired,
   onEdit: PropTypes.func.isRequired,
   onDelete: PropTypes.func.isRequired,
-  onAddSubtask: PropTypes.func,
+  onAddSubtask: PropTypes.func.isRequired,
   onMove: PropTypes.func,
   listId: PropTypes.number,
   onSubtaskComplete: PropTypes.func.isRequired
@@ -223,7 +229,6 @@ Task.propTypes = {
 
 Task.defaultProps = {
   level: 0,
-  onAddSubtask: () => {},
   onMove: () => {},
   listId: null
 };

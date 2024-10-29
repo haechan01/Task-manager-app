@@ -51,6 +51,7 @@ class Task(db.Model):
             'completed': self.completed,
             'list_id': self.list_id,
             'is_expanded': self.is_expanded,
+            'subtasks': [],
             'created_at': self.created_at.isoformat()
         }
         if include_subtasks and self.subtasks:
