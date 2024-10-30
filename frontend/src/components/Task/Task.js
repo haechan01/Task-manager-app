@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import { ChevronRight, ChevronDown, Check, Edit2, Trash2, Plus, Move } from 'lucide-react';
 import './Task.css';
+import { ArrowLeft, ArrowRight } from 'lucide-react';
+
 
 const Task = ({ 
   task, 
@@ -11,14 +13,21 @@ const Task = ({
   onEdit, 
   onDelete, 
   onAddSubtask,
-  onMove,
+  onMoveLeft,
+  onMoveRight,
   listId,
+  currentListType,
   onSubtaskComplete
 }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [editedTitle, setEditedTitle] = useState(task.title);
   const [isAddingSubtask, setIsAddingSubtask] = useState(false);
   const [newSubtaskTitle, setNewSubtaskTitle] = useState('');
+
+  // Determine if the task can move left or right
+  const canMoveLeft = level === 0 && currentListType !== 'todo';
+  const canMoveRight = level === 0 && currentListType !== 'done';
+
 
   // Calculate completion fraction for parent tasks
   const calculateCompletion = () => {
@@ -132,12 +141,26 @@ const Task = ({
               </button>
 
               {level === 0 && (
-                <button 
-                  onClick={() => onMove(task.id, listId)} 
-                  className="action-button"
-                >
-                  <Move size={16} />
-                </button>
+                <>
+                  {/* Left Arrow Button */}
+                  {canMoveLeft && (
+                    <button
+                      onClick={() => onMoveLeft(task.id)}
+                      className="action-button"
+                    >
+                      <ArrowLeft size={16} />
+                    </button>
+                  )}
+                  {/* Right Arrow Button */}
+                  {canMoveRight && (
+                    <button
+                      onClick={() => onMoveRight(task.id)}
+                      className="action-button"
+                    >
+                      <ArrowRight size={16} />
+                    </button>
+                  )}
+                </>
               )}
 
               {level < 2 && (
@@ -195,7 +218,9 @@ const Task = ({
               onEdit={onEdit}
               onDelete={onDelete}
               onAddSubtask={onAddSubtask}
-              onMove={onMove}
+              onMoveLeft={onMoveLeft}
+              onMoveRight={onMoveRight}
+              currentListType={currentListType}
               listId={listId}
               onSubtaskComplete={onSubtaskComplete}
             />
@@ -221,7 +246,9 @@ Task.propTypes = {
   onEdit: PropTypes.func.isRequired,
   onDelete: PropTypes.func.isRequired,
   onAddSubtask: PropTypes.func.isRequired,
-  onMove: PropTypes.func,
+  onMoveLeft: PropTypes.func.isRequired,
+  onMoveRight: PropTypes.func.isRequired,
+  currentListType: PropTypes.string.isRequired,
   listId: PropTypes.number,
   onSubtaskComplete: PropTypes.func.isRequired
 };

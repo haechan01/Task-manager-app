@@ -6,14 +6,16 @@ import './TaskList.css';
 const TaskList = ({ 
   listId, 
   title, 
+  type,
   tasks = [], 
   onTaskCreate,
   onTaskToggle,
   onTaskComplete,
   onTaskEdit,
   onTaskDelete,
-  onSubtaskAdd, // Changed prop name here
-  onTaskMove,
+  onSubtaskAdd, 
+  onMoveLeft,
+  onMoveRight,
   onCompleteSubtask
 }) => {
   const [isAddingTask, setIsAddingTask] = useState(false);
@@ -46,8 +48,10 @@ const TaskList = ({
             onEdit={onTaskEdit}
             onDelete={onTaskDelete}
             onAddSubtask={onSubtaskAdd} // Pass the prop to Task component
-            onMove={onTaskMove}
+            onMoveLeft={onMoveLeft}
+            onMoveRight={onMoveRight}
             listId={listId}
+            currentListType={type}
             onSubtaskComplete={onCompleteSubtask}
           />
         ))}
@@ -99,7 +103,9 @@ TaskList.propTypes = {
   onTaskEdit: PropTypes.func.isRequired,
   onTaskDelete: PropTypes.func.isRequired,
   onSubtaskAdd: PropTypes.func.isRequired, // Updated prop name and made it required
-  onTaskMove: PropTypes.func,
+  type: PropTypes.string.isRequired,
+  onMoveLeft: PropTypes.func.isRequired,
+  onMoveRight: PropTypes.func.isRequired,
   onCompleteSubtask: PropTypes.func.isRequired
 };
 

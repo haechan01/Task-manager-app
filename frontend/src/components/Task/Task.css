@@ -52,21 +52,20 @@
   gap: 4px;
 }
 
+/* Task.css */
 .action-button {
-  padding: 4px;
   background: none;
   border: none;
   cursor: pointer;
-  color: #666;
-  border-radius: 4px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  padding: 4px;
+  margin: 0 2px;
 }
 
 .action-button:hover {
-  background-color: #f0f0f0;
+  background-color: rgba(0, 0, 0, 0.1);
+  border-radius: 4px;
 }
+
 
 .subtasks-container {
   margin-left: 24px;

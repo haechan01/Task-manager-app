@@ -342,40 +342,23 @@ def delete_completed_task(current_user, task_id):
         print(f"Error deleting task: {str(e)}")
         return jsonify({'error': str(e)}), 500
 
-@tasks.route('/move/<int:task_id>', methods=['PUT'])
+@tasks.route('/move/<int:task_id>/to/<int:list_id>', methods=['PUT'])
 @token_required
-def move_task(current_user, task_id):
+def move_task(current_user, task_id, list_id):
     try:
-        # Fetch the task to be moved
-        task = Task.query.filter_by(id=task_id, user_id=current_user.id).first_or_404()
-        data = request.get_json()
-        
-        # Verify the target list belongs to the user
-        target_list = TodoList.query.filter_by(id=data['list_id'], user_id=current_user.id).first_or_404()
-        
-        # Only allow moving top-level tasks
-        if task.parent_id is None:
-            # Update the task's list_id
-            task.list_id = target_list.id
-            
-            # Recursively update list_id for all subtasks
-            def update_subtasks_list_id(task):
-                for subtask in task.subtasks:
-                    subtask.list_id = target_list.id
-                    update_subtasks_list_id(subtask)
-            
-            update_subtasks_list_id(task)
-            db.session.commit()
-            
-            # Fetch the updated task with subtasks
-            updated_task = Task.query.filter_by(id=task.id).first()
-            return jsonify(updated_task.to_dict(include_subtasks=True))
-        else:
-            return jsonify({'error': 'Can only move top-level tasks'}), 400
-                
+        task = Task.query.filter_by(id=task_id, user_id=current_user.id).first()
+        if not task:
+            return jsonify({'error': 'Task not found'}), 404
+
+        # Update the task's list_id
+        task.list_id = list_id
+        db.session.commit()
+
+        return jsonify(task.to_dict()), 200
     except Exception as e:
         db.session.rollback()
-        return jsonify({'error': str(e)}), 400
+        print(f"Error moving task: {str(e)}")
+        return jsonify({'error': 'Failed to move task'}), 500
 
 
 # Error handlers
