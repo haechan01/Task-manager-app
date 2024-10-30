@@ -49,16 +49,18 @@ const LoginPage = () => {
       <div className="login-container">
         <div className="logo">TaskMaster</div>
         
-        <div className="header">
-          <h2>Welcome back</h2>
-          <p>Please sign in to continue</p>
-        </div>
+          <p>
+            Don't have an account?{' '}
+            <Link to="/signup">Sign up</Link>
+          </p>
 
         {location.state?.message && (
           <div className="success-message">
             {location.state.message}
           </div>
         )}
+
+        
 
         <form className="login-form" onSubmit={handleSubmit}>
           {error && (
@@ -104,10 +106,7 @@ const LoginPage = () => {
         </form>
 
         <div className="nav-links">
-          <p>
-            Don't have an account?{' '}
-            <Link to="/signup">Sign up</Link>
-          </p>
+          
           <Link to="/">Back to Home</Link>
         </div>
       </div>

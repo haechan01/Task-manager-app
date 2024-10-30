@@ -117,4 +117,5 @@
 
 .add-task-button:hover {
   background-color: var(--secondary-green);
+  color: white;
 }
