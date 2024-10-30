@@ -1,3 +1,4 @@
+/* General page layout */
 .home-page {
   min-height: 100vh;
   background-color: #f4f4f4;
@@ -6,6 +7,7 @@
   flex-direction: column;
 }
 
+/* Header styling */
 .header {
   background-color: white;
   padding: 16px 24px;
@@ -21,6 +23,7 @@
   font-weight: 600;
 }
 
+/* Task lists container */
 .lists-container {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
@@ -37,6 +40,7 @@
   }
 }
 
+/* Loading and error states */
 .loading-state {
   display: flex;
   justify-content: center;
@@ -55,7 +59,7 @@
   text-align: center;
 }
 
-/* Animation for task updates */
+/* Task update animation */
 @keyframes taskUpdate {
   0% { background-color: rgba(29, 155, 240, 0.1); }
   100% { background-color: transparent; }
@@ -63,4 +67,55 @@
 
 .task-updated {
   animation: taskUpdate 1s ease-out;
+}
+
+/* Task editing container */
+.task-edit-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px;
+  border-radius: 8px;
+  background-color: #ffffff;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  margin-top: 12px;
+  max-width: 100%;
+  overflow: hidden; /* Prevents overflow during edit */
+}
+
+.task-edit-input {
+  flex-grow: 1;
+  padding: 8px 12px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 16px;
+  outline: none;
+}
+
+.task-edit-button {
+  background-color: #28a745;
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.task-edit-button:hover {
+  background-color: #218838;
+}
+
+.cancel-button {
+  background-color: #e0e0e0;
+  color: #666;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.cancel-button:hover {
+  background-color: #bdbdbd;
 }

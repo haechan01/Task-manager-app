@@ -68,7 +68,7 @@ const TaskList = ({
             autoFocus
           />
           <div className="form-buttons">
-            <button type="submit" className="save-button">Add Task</button>
+            <button type="submit" className="add-task-button">Add Task</button>
             <button 
               type="button" 
               className="cancel-button"

@@ -1,6 +1,15 @@
+/* Updated LandingPage.css */
+:root {
+  --primary-green: #28a745; /* Main theme color */
+  --secondary-green: #218838; /* Darker green for hover effects */
+  --light-green: #e9f7ef; /* Light green for backgrounds */
+  --dark-grey: #333;
+  --light-grey: #666;
+}
+
 .landing-page {
   font-family: Arial, sans-serif;
-  background-color: #f4f4f4;
+  background-color: var(--light-green);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -11,33 +20,36 @@
 
 .landing-container {
   background-color: white;
-  padding: 30px;
-  border-radius: 5px;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  padding: 40px;
+  border-radius: 10px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
   max-width: 600px;
   width: 100%;
   text-align: center;
+  transition: transform 0.3s ease-in-out;
+}
+
+.landing-container:hover {
+  transform: translateY(-10px);
 }
 
 .logo {
   font-size: 48px;
   font-weight: bold;
-  color: #333;
+  color: var(--primary-green);
   margin-bottom: 20px;
 }
 
 .landing-container h2 {
-  color: #333;
-  font-size: 24px;
+  color: var(--dark-grey);
+  font-size: 26px;
   margin-bottom: 10px;
-  text-align: center;
 }
 
 .landing-container h3 {
-  color: #666;
-  font-size: 18px;
+  color: var(--light-grey);
+  font-size: 20px;
   margin-bottom: 30px;
-  text-align: center;
 }
 
 .auth-buttons {
@@ -47,75 +59,36 @@
   margin-bottom: 20px;
 }
 
-.login-option {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
-  padding: 10px;
-  background-color: white;
-  color: #333;
-  border: 1px solid #ccc;
-  border-radius: 3px;
-  font-size: 16px;
-  cursor: pointer;
-  transition: background-color 0.2s;
-}
-
-.login-option:hover {
-  background-color: #f8f8f8;
-}
-
-.login-option img {
-  width: 20px;
-  height: 20px;
-  margin-right: 10px;
-}
-
-.or-divider {
-  display: flex;
-  align-items: center;
-  margin: 20px 0;
-  color: #666;
-}
-
-.or-divider::before,
-.or-divider::after {
-  content: '';
-  flex: 1;
-  height: 1px;
-  background-color: #ccc;
-  margin: 0 10px;
-}
-
 .create-account {
   width: 100%;
-  padding: 10px;
-  background-color: #333;
+  padding: 12px;
+  background-color: var(--primary-green);
   color: white;
   border: none;
-  border-radius: 3px;
-  font-size: 16px;
+  border-radius: 5px;
+  font-size: 18px;
   cursor: pointer;
-  transition: background-color 0.2s;
+  transition: background-color 0.3s, transform 0.2s;
 }
 
 .create-account:hover {
-  background-color: #555;
+  background-color: var(--secondary-green);
+  transform: scale(1.05);
 }
 
 .footer {
   margin-top: 20px;
-  font-size: 14px;
-  color: #666;
+  font-size: 16px;
+  color: var(--light-grey);
 }
 
 .sign-in-link {
-  color: #333;
+  color: var(--primary-green);
   cursor: pointer;
   text-decoration: underline;
+  transition: color 0.2s;
 }
 
 .sign-in-link:hover {
-  color: #555;
+  color: var(--secondary-green);
 }
