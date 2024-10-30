@@ -50,10 +50,17 @@ class Task(db.Model):
             'description': self.description,
             'completed': self.completed,
             'list_id': self.list_id,
+            'parent_id': self.parent_id,
             'is_expanded': self.is_expanded,
             'subtasks': [],
             'created_at': self.created_at.isoformat()
         }
-        if include_subtasks and self.subtasks:
+        if include_subtasks:
             result['subtasks'] = [subtask.to_dict() for subtask in self.subtasks]
+            if self.subtasks:
+                completed_count = sum(1 for st in self.subtasks if st.completed)
+                total_count = len(self.subtasks)
+                result['completion_fraction'] = f"{completed_count}/{total_count}"
+            else:
+                result['completion_fraction'] = None
         return result

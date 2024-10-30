@@ -39,7 +39,6 @@ const Task = ({
 
   const handleSubtaskFormSubmit = async (e) => {
     e.preventDefault();
-    console.log('handleSubtaskFormSubmit called'); // Debugging
 
     if (newSubtaskTitle.trim()) {
       if (level >= 2) {

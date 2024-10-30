@@ -138,7 +138,6 @@ const HomePage = () => {
         }
       });
       const data = await response.json();
-      console.log('Fetched lists:', data);
 
       if (!data || data.length === 0) {
         await createDefaultLists();
@@ -182,7 +181,6 @@ const HomePage = () => {
         })
       );
 
-      console.log('Created default lists:', createdLists);
       setLists(createdLists);
     } catch (error) {
       console.error('Error creating default lists:', error);
@@ -195,8 +193,6 @@ const HomePage = () => {
    */
   const handleCreateTask = async (listId, title) => {
     try {
-      console.log('Creating task for list:', listId, 'with title:', title);
-
       const response = await fetch(`http://127.0.0.1:5000/api/tasks/lists/${listId}/tasks`, {
         method: 'POST',
         headers: {
@@ -296,14 +292,19 @@ const HomePage = () => {
   /**
    * Marks a subtask as complete/incomplete
    */
-  const handleCompleteSubtask = async (taskId, subtaskId) => {
+  const handleCompleteSubtask = async (parentTaskId, subtaskId) => {
     try {
-      const task = findTaskInLists(lists, taskId);
-      const subtask = task?.subtasks?.find(st => st.id === subtaskId);
-      if (!subtask) return;
+      // Find the subtask to get its current completed status
+      const parentTask = findTaskInLists(lists, parentTaskId);
+      const subtask = parentTask?.subtasks?.find(st => st.id === subtaskId);
+      if (!subtask) {
+        console.error('Subtask not found in state');
+        return;
+      }
 
-      const newCompletedState = !subtask.completed;
+      const newCompletedState = !subtask.completed; // Toggle the completion status
 
+      // Fetch the updated subtask and parent task from the backend
       const response = await fetch(
         `http://127.0.0.1:5000/api/tasks/complete/subtask/${subtaskId}`,
         {
@@ -315,25 +316,19 @@ const HomePage = () => {
           body: JSON.stringify({ completed: newCompletedState })
         }
       );
-
+  
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.error || 'Failed to update subtask completion');
       }
-
-      const updatedSubtask = await response.json();
-
-      // Update the lists state with the completed subtask and new fraction
+  
+      const updatedParentTask = await response.json();
+  
+      // Update the state with the updated parent task
       setLists(currentLists =>
         currentLists.map(list => ({
           ...list,
-          tasks: updateTaskInList(list.tasks, taskId, {
-            ...task,
-            subtasks: task.subtasks.map(st =>
-              st.id === subtaskId ? { ...st, completed: newCompletedState } : st
-            ),
-            completionFraction: updatedSubtask.completion_fraction
-          })
+          tasks: updateTaskInList(list.tasks, parentTaskId, updatedParentTask)
         }))
       );
     } catch (error) {
@@ -402,8 +397,6 @@ const HomePage = () => {
    */
   const handleAddSubtask = async (taskId, title) => {
     try {
-      console.log('Starting subtask creation:', { taskId, title });  // Debug log
-      
       const response = await fetch(`http://127.0.0.1:5000/api/tasks/add/${taskId}/subtasks/create`, {
         method: 'POST',
         headers: {
@@ -416,8 +409,6 @@ const HomePage = () => {
         })
       });
   
-      console.log('Response status:', response.status);  // Debug log
-  
       if (!response.ok) {
         const errorData = await response.json();
         console.error('Server error:', errorData);  // Debug log
@@ -425,7 +416,6 @@ const HomePage = () => {
       }
   
       const newSubtask = await response.json();
-      console.log('Response data:', newSubtask);  // Debug log
   
       // Initialize subtasks as an empty array if undefined
       newSubtask.subtasks = newSubtask.subtasks || [];
@@ -436,12 +426,10 @@ const HomePage = () => {
           ...list,
           tasks: updateTaskWithNewSubtask(list.tasks, taskId, newSubtask)
         }));
-        console.log('Updated lists after adding subtask:', updatedLists); // Debug log
+      
         return updatedLists;
       });
-  
-      // Log the final state update
-      console.log('Subtask added successfully:', newSubtask);
+
     } catch (error) {
       console.error('Error adding subtask:', error);
     }
@@ -475,7 +463,6 @@ const HomePage = () => {
    */
   const handleUpdateSubtask = async (taskId, subtaskId, newTitle) => {
     try {
-      console.log('Updating subtask:', subtaskId, 'of task:', taskId);
 
       const response = await fetch(
         `http://127.0.0.1:5000/api/tasks/update/${taskId}/subtasks/update/${subtaskId}`,
@@ -517,8 +504,6 @@ const HomePage = () => {
    */
   const handleDeleteSubtask = async (taskId, subtaskId) => {
     try {
-      console.log('Deleting subtask:', subtaskId, 'from task:', taskId);
-
       const response = await fetch(
         `http://127.0.0.1:5000/api/tasks/delete/${taskId}/subtasks/delete/${subtaskId}`,
         {
@@ -545,8 +530,6 @@ const HomePage = () => {
           )
         }))
       );
-
-      console.log('Subtask deleted successfully');
     } catch (error) {
       console.error('Error deleting subtask:', error);
     }
@@ -601,8 +584,6 @@ const HomePage = () => {
           return list;
         })
       );
-
-      console.log('Task moved successfully');
     } catch (error) {
       console.error('Error moving task:', error);
       // Revert state changes if error occurs
