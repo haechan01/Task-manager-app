@@ -1,23 +1,29 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
-import { ChevronRight, ChevronDown, Check, Edit2, Trash2, Plus, Move } from 'lucide-react';
-import './Task.css';
+import {
+  ChevronRight,
+  ChevronDown,
+  Check,
+  Edit2,
+  Trash2,
+  Plus,
+} from 'lucide-react';
 import { ArrowLeft, ArrowRight } from 'lucide-react';
+import './Task.css';
 
-
-const Task = ({ 
-  task, 
-  level = 0, 
-  onToggle, 
+const Task = ({
+  task,
+  level = 0,
+  onToggle,
   onComplete,
-  onEdit, 
-  onDelete, 
+  onEdit,
+  onDelete,
   onAddSubtask,
   onMoveLeft,
   onMoveRight,
   listId,
   currentListType,
-  onSubtaskComplete
+  onSubtaskComplete,
 }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [editedTitle, setEditedTitle] = useState(task.title);
@@ -28,20 +34,21 @@ const Task = ({
   const canMoveLeft = level === 0 && currentListType !== 'todo';
   const canMoveRight = level === 0 && currentListType !== 'done';
 
-
   // Calculate completion fraction for parent tasks
   const calculateCompletion = () => {
     if (!task.subtasks || task.subtasks.length === 0) {
       return null;
     }
-    const completedCount = task.subtasks.filter(subtask => subtask.completed).length;
+    const completedCount = task.subtasks.filter(
+      (subtask) => subtask.completed
+    ).length;
     return `${completedCount}/${task.subtasks.length}`;
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
     if (editedTitle.trim()) {
-      onEdit(task.id, editedTitle);
+      onEdit(task.id, editedTitle.trim());
       setIsEditing(false);
     }
   };
@@ -54,7 +61,7 @@ const Task = ({
         alert('Maximum nesting level reached');
         return;
       }
-      await onAddSubtask(task.id, newSubtaskTitle);
+      await onAddSubtask(task.id, newSubtaskTitle.trim());
       setNewSubtaskTitle('');
       setIsAddingSubtask(false);
 
@@ -76,15 +83,25 @@ const Task = ({
 
   return (
     <div className="task-container">
-      <div className={`task-card ${level > 0 ? 'subtask' : ''} ${task.completed ? 'completed' : ''}`}>
+      <div
+        className={`task-card ${level > 0 ? 'subtask' : ''} ${
+          task.completed ? 'completed' : ''
+        } ${isEditing ? 'editing' : ''}`}
+      >
         <div className="task-content">
           <div className="task-left">
             {(task.subtasks?.length > 0 || isAddingSubtask) && (
-              <button 
-                onClick={() => onToggle(task.id)} 
-                className={`toggle-button ${task.is_expanded ? 'expanded' : ''}`}
+              <button
+                onClick={() => onToggle(task.id)}
+                className={`toggle-button ${
+                  task.is_expanded ? 'expanded' : ''
+                }`}
               >
-                {task.is_expanded ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
+                {task.is_expanded ? (
+                  <ChevronDown size={16} />
+                ) : (
+                  <ChevronRight size={16} />
+                )}
               </button>
             )}
 
@@ -95,95 +112,108 @@ const Task = ({
                 onChange={handleCheckboxClick}
                 className="task-checkbox"
               />
-              {!isEditing ? (
-                <span className={`task-title ${task.completed ? 'completed' : ''}`}>
-                  {task.title}
-                </span>
-              ) : (
-                <form onSubmit={handleSubmit} className="edit-form">
-                  <input
-                    type="text"
-                    value={editedTitle}
-                    onChange={(e) => setEditedTitle(e.target.value)}
-                    className="edit-input"
-                    autoFocus
-                  />
-                  <div className="edit-buttons">
-                    <button type="submit" className="save-button">
-                      <Check size={16} />
-                    </button>
-                    <button 
-                      type="button" 
-                      onClick={() => setIsEditing(false)}
-                      className="cancel-button"
-                    >
-                      Cancel
-                    </button>
-                  </div>
-                </form>
-              )}
+              <div className="task-text">
+                {!isEditing ? (
+                  <span
+                    className={`task-title ${
+                      task.completed ? 'completed' : ''
+                    }`}
+                  >
+                    {task.title}
+                  </span>
+                ) : (
+                  <form onSubmit={handleSubmit} className="edit-form">
+                    <input
+                      type="text"
+                      value={editedTitle}
+                      onChange={(e) => setEditedTitle(e.target.value)}
+                      className="edit-input"
+                      autoFocus
+                    />
+                    <div className="edit-buttons">
+                      <button type="submit" className="save-button">
+                        <Check size={16} />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setIsEditing(false)}
+                        className="cancel-button"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </form>
+                )}
+
+                {/* Completion fraction */}
+                {calculateCompletion() && (
+                  <span className="task-completion">
+                    {calculateCompletion()}
+                  </span>
+                )}
+              </div>
             </div>
           </div>
 
           <div className="task-right">
-            {calculateCompletion() && (
-              <span className="task-completion">
-                {calculateCompletion()}
-              </span>
-            )}
-            
-            <div className="task-actions">
-              <button 
-                onClick={() => setIsEditing(true)} 
-                className="action-button"
-              >
-                <Edit2 size={16} />
-              </button>
-
-              {level === 0 && (
-                <>
-                  {/* Left Arrow Button */}
-                  {canMoveLeft && (
-                    <button
-                      onClick={() => onMoveLeft(task.id)}
-                      className="action-button"
-                    >
-                      <ArrowLeft size={16} />
-                    </button>
-                  )}
-                  {/* Right Arrow Button */}
-                  {canMoveRight && (
-                    <button
-                      onClick={() => onMoveRight(task.id)}
-                      className="action-button"
-                    >
-                      <ArrowRight size={16} />
-                    </button>
-                  )}
-                </>
-              )}
-
-              {level < 2 && (
-                <button 
-                  onClick={() => setIsAddingSubtask(true)} 
+            {/* Conditionally render action buttons */}
+            {!isEditing && (
+              <div className="task-actions">
+                <button
+                  onClick={() => setIsEditing(true)}
                   className="action-button"
                 >
-                  <Plus size={16} />
+                  <Edit2 size={16} />
                 </button>
-              )}
 
-              <button 
-                onClick={() => onDelete(task.id)} 
-                className="action-button delete"
-              >
-                <Trash2 size={16} />
-              </button>
-            </div>
+                {level === 0 && (
+                  <>
+                    {/* Left Arrow Button */}
+                    {canMoveLeft && (
+                      <button
+                        onClick={() => onMoveLeft(task.id)}
+                        className="action-button"
+                      >
+                        <ArrowLeft size={16} />
+                      </button>
+                    )}
+                    {/* Right Arrow Button */}
+                    {canMoveRight && (
+                      <button
+                        onClick={() => onMoveRight(task.id)}
+                        className="action-button"
+                      >
+                        <ArrowRight size={16} />
+                      </button>
+                    )}
+                  </>
+                )}
+
+                {level < 2 && (
+                  <button
+                    onClick={() => setIsAddingSubtask(true)}
+                    className="action-button"
+                  >
+                    <Plus size={16} />
+                  </button>
+                )}
+
+                <button
+                  onClick={() => onDelete(task.id)}
+                  className="action-button delete"
+                >
+                  <Trash2 size={16} />
+                </button>
+              </div>
+            )}
           </div>
         </div>
 
         {isAddingSubtask && (
-          <form onSubmit={handleSubtaskFormSubmit} className="add-subtask-form">
+          <form
+            onSubmit={handleSubtaskFormSubmit}
+            className="add-subtask-form"
+          >
             <input
               type="text"
               value={newSubtaskTitle}
@@ -193,9 +223,11 @@ const Task = ({
               autoFocus
             />
             <div className="subtask-buttons">
-              <button type="submit" className="save-button">Add</button>
-              <button 
-                type="button" 
+              <button type="submit" className="save-button">
+                Add
+              </button>
+              <button
+                type="button"
                 onClick={() => setIsAddingSubtask(false)}
                 className="cancel-button"
               >
@@ -205,26 +237,27 @@ const Task = ({
           </form>
         )}
       </div>
-      
+
       {task.is_expanded && (
         <div className="subtasks-container">
-          {task.subtasks && task.subtasks.map(subtask => (
-            <Task
-              key={subtask.id}
-              task={subtask}
-              level={level + 1}
-              onToggle={onToggle}
-              onComplete={onComplete}
-              onEdit={onEdit}
-              onDelete={onDelete}
-              onAddSubtask={onAddSubtask}
-              onMoveLeft={onMoveLeft}
-              onMoveRight={onMoveRight}
-              currentListType={currentListType}
-              listId={listId}
-              onSubtaskComplete={onSubtaskComplete}
-            />
-          ))}
+          {task.subtasks &&
+            task.subtasks.map((subtask) => (
+              <Task
+                key={subtask.id}
+                task={subtask}
+                level={level + 1}
+                onToggle={onToggle}
+                onComplete={onComplete}
+                onEdit={onEdit}
+                onDelete={onDelete}
+                onAddSubtask={onAddSubtask}
+                onMoveLeft={onMoveLeft}
+                onMoveRight={onMoveRight}
+                currentListType={currentListType}
+                listId={listId}
+                onSubtaskComplete={onSubtaskComplete}
+              />
+            ))}
         </div>
       )}
     </div>
@@ -238,7 +271,7 @@ Task.propTypes = {
     completed: PropTypes.bool,
     is_expanded: PropTypes.bool,
     subtasks: PropTypes.array,
-    parent_id: PropTypes.number
+    parent_id: PropTypes.number,
   }).isRequired,
   level: PropTypes.number,
   onToggle: PropTypes.func.isRequired,
@@ -250,13 +283,13 @@ Task.propTypes = {
   onMoveRight: PropTypes.func.isRequired,
   currentListType: PropTypes.string.isRequired,
   listId: PropTypes.number,
-  onSubtaskComplete: PropTypes.func.isRequired
+  onSubtaskComplete: PropTypes.func.isRequired,
 };
 
 Task.defaultProps = {
   level: 0,
   onMove: () => {},
-  listId: null
+  listId: null,
 };
 
 export default Task;
