@@ -535,61 +535,67 @@ const HomePage = () => {
     }
   };
 
+  const handleMoveTaskLeft = (taskId, currentListId) => {
+    const currentIndex = lists.findIndex((list) => list.id === currentListId);
+    if (currentIndex > 0) {
+      const destinationListId = lists[currentIndex - 1].id;
+      handleMoveTask(taskId, currentListId, destinationListId);
+    }
+  };
+  
+  const handleMoveTaskRight = (taskId, currentListId) => {
+    const currentIndex = lists.findIndex((list) => list.id === currentListId);
+    if (currentIndex < lists.length - 1) {
+      const destinationListId = lists[currentIndex + 1].id;
+      handleMoveTask(taskId, currentListId, destinationListId);
+    }
+  };
+
   /**
    * Moves a task and all its subtasks to a different list
    */
   const handleMoveTask = async (taskId, sourceListId, destinationListId) => {
     try {
-      // Optimistically update state by removing the task from the source list
-      let movedTask;
-      setLists(currentLists => {
-        return currentLists.map(list => {
-          if (list.id === sourceListId) {
-            const newTasks = list.tasks.filter(task => {
-              if (task.id === taskId) {
-                movedTask = task;
-                return false;
-              }
-              return true;
-            });
-            return { ...list, tasks: newTasks };
-          }
-          return list;
-        });
-      });
-
-      // Send the move request to the backend
-      const response = await fetch(`http://127.0.0.1:5000/api/move/${taskId}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`
-        },
-        body: JSON.stringify({ list_id: destinationListId })
-      });
-
+      const response = await fetch(
+        `http://127.0.0.1:5000/api/tasks/move/${taskId}/to/${destinationListId}`,
+        {
+          method: 'PUT',
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+  
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.error || 'Failed to move task');
       }
-
-      const movedTaskData = await response.json();
-
-      // Update state with moved task in destination list
-      setLists(currentLists =>
-        currentLists.map(list => {
-          if (list.id === destinationListId) {
-            return { ...list, tasks: [...(list.tasks || []), movedTaskData] };
+  
+      const movedTask = await response.json();
+  
+      setLists((currentLists) => {
+        const updatedLists = currentLists.map((list) => {
+          if (list.id === sourceListId) {
+            return {
+              ...list,
+              tasks: removeTaskAndSubtasks(list.tasks, taskId),
+            };
+          } else if (list.id === destinationListId) {
+            return {
+              ...list,
+              tasks: [...(list.tasks || []), movedTask],
+            };
           }
           return list;
-        })
-      );
+        });
+  
+        return updatedLists;
+      });
     } catch (error) {
       console.error('Error moving task:', error);
-      // Revert state changes if error occurs
-      fetchLists();
     }
   };
+  
 
   /**
    * Handles the end of a drag event
@@ -662,7 +668,8 @@ const HomePage = () => {
                 onSubtaskDelete={handleDeleteSubtask}
                 canAddSubtask={canAddSubtask}
                 onCompleteSubtask={handleCompleteSubtask}
-                onTaskMove={handleMoveTask}
+                onMoveLeft={(taskId) => handleMoveTaskLeft(taskId, list.id)}
+                onMoveRight={(taskId) => handleMoveTaskRight(taskId, list.id)}
               />
             ))}
           </div>
@@ -671,7 +678,6 @@ const HomePage = () => {
     </div>
   );
 };
-
 // PropTypes for type checking
 HomePage.propTypes = {
   // Add PropTypes if you want to use them
