@@ -278,7 +278,7 @@ def delete_subtask(current_user, task_id, subtask_id):
         db.session.rollback()
         return jsonify({'error': str(e)}), 400
 
-@tasks.route('/tasks/complete/subtask/<int:subtask_id>', methods=['PUT'])
+@tasks.route('/complete/subtask/<int:subtask_id>', methods=['PUT'])
 @token_required
 def complete_subtask(current_user, subtask_id):
     try:
@@ -290,27 +290,23 @@ def complete_subtask(current_user, subtask_id):
 
         # Update subtask completion status
         data = request.get_json()
-        subtask.completed = data.get('completed', True)
-        
-        # Update parent task's completion fraction
-        if subtask.parent_id:
-            parent_task = Task.query.get(subtask.parent_id)
-            if parent_task:
-                # Calculate new completion fraction
-                all_subtasks = Task.query.filter_by(parent_id=parent_task.id).all()
-                completed_count = sum(1 for st in all_subtasks if st.completed)
-                total_count = len(all_subtasks)
-                parent_task.completion_fraction = f"{completed_count}/{total_count}"
+        if not data:
+            return jsonify({'error': 'No JSON data provided'}), 400
 
+        subtask.completed = data.get('completed', True)
         db.session.commit()
 
-        return jsonify({
-            'id': subtask.id,
-            'completed': subtask.completed,
-            'parent_id': subtask.parent_id,
-            'title': subtask.title,
-            'completion_fraction': parent_task.completion_fraction if subtask.parent_id else None
-        }), 200
+        # Update parent task's completion fraction
+        parent_task = None
+        if subtask.parent_id:
+            parent_task = Task.query.filter_by(id=subtask.parent_id, user_id=current_user.id).first()
+            if parent_task:
+                # No need to store completion_fraction in DB; calculate on the fly
+                # Return the updated parent task with subtasks
+                return jsonify(parent_task.to_dict(include_subtasks=True)), 200
+
+        # If no parent task, return the updated subtask
+        return jsonify(subtask.to_dict()), 200
         
     except Exception as e:
         db.session.rollback()
