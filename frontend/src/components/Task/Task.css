@@ -19,6 +19,7 @@ button {
   flex-direction: column;
   transition: all 0.2s ease;
   overflow: hidden;
+  
 }
 
 .task-card:hover {
@@ -31,23 +32,26 @@ button {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 12px;
+  flex-wrap: wrap; /* Allow wrapping */
+  align-items: flex-start; /* Align items to the top */
+  gap: 8px;
 }
 
 /* Task Left */
 .task-left {
   display: flex;
-  align-items: center;
-  gap: 8px;
+  align-items: flex-start; /* Align items to the top */
+  gap: 5px;
   min-width: 0;
+  flex-wrap: wrap;
 }
 
 /* Task Info */
 .task-info {
   display: flex;
-  align-items: center;
-  gap: 8px;
+  gap: 4px;
   min-width: 0;
+  max-width: 80%;
   flex: 1;
 }
 
@@ -97,6 +101,7 @@ button {
 .task-text {
   display: flex;
   flex-direction: column;
+  max-width: 80%;
 }
 
 /* Adjust task-completion */
@@ -209,7 +214,7 @@ button {
 .edit-form {
   display: flex;
   align-items: center;
-  width: 100%;
+  max-width: 70%;
   margin-top: 8px;
 }
 
@@ -221,6 +226,7 @@ button {
   font-size: 14px;
   color: var(--text-color);
   outline: none;
+  max-width: 100%;
   box-sizing: border-box;
 }
 
@@ -234,7 +240,7 @@ button {
 /* Add Subtask Form */
 .add-subtask-form {
   display: flex;
-  gap: 8px;
+  gap: 4px;
   margin-top: 8px;
   align-items: center;
 }
@@ -294,10 +300,3 @@ button {
   cursor: pointer;
 }
 
-
-
-
-/* Adjust task-content for subtasks */
-.task-content {
-  flex-wrap: wrap;
-}
