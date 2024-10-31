@@ -1,8 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import PropTypes from 'prop-types';
 import TaskList from '../../components/TaskList/TaskList';
 import { DragDropContext } from 'react-beautiful-dnd';
 import './HomePage.css';
+import AuthContext from '../../context/AuthContext';
+import { useNavigate } from 'react-router-dom';
 
 // Three default lists for the task management application
 const DEFAULT_LISTS = [
@@ -21,6 +23,14 @@ const HomePage = () => {
   const token = localStorage.getItem('token');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  const { logout } = useContext(AuthContext);
+  const navigate = useNavigate(); // For React Router v6
+
+  const handleLogout = () => {
+    logout();
+    navigate('/login');
+  };
 
   useEffect(() => {
     fetchLists();
@@ -647,7 +657,10 @@ const HomePage = () => {
   return (
     <div className="home-page">
       <header className="header">
-        <h1>Task Management</h1>
+        <h1>Task Manager</h1>
+        <button onClick={handleLogout} className="logout-button">
+          Logout
+        </button>
       </header>
 
       {loading ? (
