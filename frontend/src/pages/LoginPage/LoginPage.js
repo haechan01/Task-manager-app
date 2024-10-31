@@ -15,6 +15,7 @@ const LoginPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
+  // Handle form input changes
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({
@@ -24,6 +25,7 @@ const LoginPage = () => {
     setError('');
   };
 
+  // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
@@ -39,29 +41,19 @@ const LoginPage = () => {
     }
   };
 
-  const handleGoogleSignIn = () => {
-    // Implement Google Sign In
-    console.log('Google Sign In clicked');
-  };
-
   return (
     <div className="login-page">
       <div className="login-container">
         <div className="logo">TaskMaster</div>
-        
           <p>
             Don't have an account?{' '}
             <Link to="/signup">Sign up</Link>
           </p>
-
         {location.state?.message && (
           <div className="success-message">
             {location.state.message}
           </div>
         )}
-
-        
-
         <form className="login-form" onSubmit={handleSubmit}>
           {error && (
             <div className="error-message">
@@ -69,7 +61,6 @@ const LoginPage = () => {
               <span>{error}</span>
             </div>
           )}
-
           <div className="form-group">
             <label htmlFor="username">Username</label>
             <input
@@ -104,9 +95,7 @@ const LoginPage = () => {
             {loading ? 'Signing in...' : 'Sign in'}
           </button>
         </form>
-
         <div className="nav-links">
-          
           <Link to="/">Back to Home</Link>
         </div>
       </div>

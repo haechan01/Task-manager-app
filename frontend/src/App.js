@@ -6,6 +6,11 @@ import LoginPage from './pages/LoginPage/LoginPage';
 import HomePage from './pages/HomePage/HomePage';
 import { AuthProvider } from './context/AuthContext';
 
+/**
+  * The App component is the root component of the application. 
+  * It uses the Router component from react-router-dom 
+  * to define the routes of the application.
+**/
 const App = () => {
   return (
     <AuthProvider>

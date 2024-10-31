@@ -16,18 +16,14 @@ const LandingPage = () => {
   return (
     <div className="landing-page">
       <div className="landing-container">
-        <div className="logo">TaskMaster</div>
-        <h2>Welcome to TaskMaster</h2>
-        <h3>Organize your tasks efficiently</h3>
-        
+        <div className="logo">Task Manager</div>
+        <h2>Welcome to Task Manager</h2>
+        <h3>Organize your tasks efficiently</h3>       
         <div className="auth-buttons">
-        
-
           <button className="create-account" onClick={handleCreateAccount}>
             Create account
           </button>
         </div>
-
         <div className="footer">
           <p>
             Already have an account?{' '}

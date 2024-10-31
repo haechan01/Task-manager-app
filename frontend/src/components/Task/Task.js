@@ -11,6 +11,7 @@ import {
 import { ArrowLeft, ArrowRight } from 'lucide-react';
 import './Task.css';
 
+// Task component
 const Task = ({
   task,
   level = 0,
@@ -45,6 +46,7 @@ const Task = ({
     return `${completedCount}/${task.subtasks.length}`;
   };
 
+  // Handle form submission for editing task title
   const handleSubmit = (e) => {
     e.preventDefault();
     if (editedTitle.trim()) {
@@ -53,6 +55,7 @@ const Task = ({
     }
   };
 
+  // Handle form submission for adding a new subtask
   const handleSubtaskFormSubmit = async (e) => {
     e.preventDefault();
 
@@ -72,6 +75,7 @@ const Task = ({
     }
   };
 
+  
   const handleCheckboxClick = (e) => {
     e.stopPropagation();
     if (level === 0) {
