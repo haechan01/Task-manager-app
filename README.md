@@ -2,6 +2,10 @@
 
 A modern task management application built with React and Flask that allows users to create and manage hierarchical todo lists with nested subtasks.
 
+## Demo video
+Here is the link to the App's demo video: 
+https://www.loom.com/share/057232bf74134a328771506ef249b411?sid=7cd894ae-88bc-4523-91c0-220fb2a9015e
+
 ## Table of Contents
 
 1. [Features](#features)

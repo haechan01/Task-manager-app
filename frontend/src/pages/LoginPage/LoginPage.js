@@ -44,7 +44,7 @@ const LoginPage = () => {
   return (
     <div className="login-page">
       <div className="login-container">
-        <div className="logo">TaskMaster</div>
+        <div className="logo">Task Manager</div>
           <p>
             Don't have an account?{' '}
             <Link to="/signup">Sign up</Link>

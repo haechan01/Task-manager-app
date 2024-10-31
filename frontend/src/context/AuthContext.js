@@ -36,12 +36,15 @@ export const AuthProvider = ({ children }) => {
     return response;
   };
 
-  const logout = async () => {
-    await authApi.logout();
-    localStorage.removeItem('token');
+  const logout = () => {
+    // Clear user data
     setUser(null);
-    setIsAuthenticated(false);
+
+    // Remove token from local storage or cookies
+    localStorage.removeItem('token');
   };
+
+  
 
   const value = {
     user,
