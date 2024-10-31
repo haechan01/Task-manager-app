@@ -34,14 +34,14 @@ button {
   align-items: center;
   flex-wrap: wrap; /* Allow wrapping */
   align-items: flex-start; /* Align items to the top */
-  gap: 8px;
+  gap: 2px;
 }
 
 /* Task Left */
 .task-left {
   display: flex;
   align-items: flex-start; /* Align items to the top */
-  gap: 5px;
+  gap: 2px;
   min-width: 0;
   flex-wrap: wrap;
 }
@@ -51,7 +51,7 @@ button {
   display: flex;
   gap: 4px;
   min-width: 0;
-  max-width: 80%;
+  max-width: 100%;
   flex: 1;
 }
 
@@ -101,7 +101,7 @@ button {
 .task-text {
   display: flex;
   flex-direction: column;
-  max-width: 80%;
+  max-width: 100%;
 }
 
 /* Adjust task-completion */

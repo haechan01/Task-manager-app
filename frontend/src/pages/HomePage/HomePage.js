@@ -4,7 +4,7 @@ import TaskList from '../../components/TaskList/TaskList';
 import { DragDropContext } from 'react-beautiful-dnd';
 import './HomePage.css';
 
-// Constants
+// Three default lists for the task management application
 const DEFAULT_LISTS = [
   { title: 'To Do', type: 'todo' },
   { title: 'In Progress', type: 'in_progress' },
@@ -39,6 +39,7 @@ const HomePage = () => {
     return null;
   };
 
+  // Find a task by ID in the lists
   const findTaskInLists = (lists, taskId) => {
     for (const list of lists) {
       const task = findTaskInArray(list.tasks, taskId);
@@ -47,6 +48,7 @@ const HomePage = () => {
     return null;
   };
 
+  // Update a task in the lists
   const updateTaskInList = (tasks, taskId, updatedTask) => {
     return tasks.map(task => {
       if (task.id === taskId) {
@@ -62,6 +64,7 @@ const HomePage = () => {
     });
   };
 
+  // Update a task with a new subtask
   const updateTaskWithNewSubtask = (tasks, parentId, newSubtask) => {
     return tasks.map(task => {
       if (task.id === parentId) {
@@ -80,7 +83,7 @@ const HomePage = () => {
     });
   };
   
-
+  // Remove a task and all its subtasks from the lists
   const removeTaskAndSubtasks = (tasks, taskId) => {
     return tasks.filter(task => {
       if (task.id === taskId) return false;
@@ -91,6 +94,7 @@ const HomePage = () => {
     });
   };
 
+  // Update a subtask in the lists
   const updateSubtaskInList = (tasks, taskId, subtaskId, updateFn) => {
     return tasks.map(task => {
       if (task.id === taskId && task.subtasks) {
@@ -109,6 +113,7 @@ const HomePage = () => {
     });
   };
 
+  // Get the nesting level of a task
   const getTaskLevel = task => {
     let level = 0;
     while (task.parent_id) {
@@ -119,6 +124,7 @@ const HomePage = () => {
     return level;
   };
 
+  // Check if a task can have a subtask added
   const canAddSubtask = taskId => {
     const task = findTaskInLists(lists, taskId);
     if (!task) return false;
@@ -126,9 +132,8 @@ const HomePage = () => {
     return level < MAX_SUBTASK_LEVEL - 1;
   };
 
-  /**
-   * Fetches all task lists for the current user
-   */
+ 
+  // Fetches all task lists for the current user
   const fetchLists = async () => {
     try {
       setLoading(true);
@@ -235,9 +240,7 @@ const HomePage = () => {
           Authorization: `Bearer ${token}`
         }
       });
-
       if (!response.ok) throw new Error('Failed to toggle task');
-
       const updatedTask = await response.json();
       setLists(currentLists =>
         currentLists.map(list => ({

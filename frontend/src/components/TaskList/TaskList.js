@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import Task from '../Task/Task';
 import './TaskList.css';
 
+// The TaskList component is a presentational component that renders a list of tasks.
 const TaskList = ({ 
   listId, 
   title, 
@@ -21,6 +22,7 @@ const TaskList = ({
   const [isAddingTask, setIsAddingTask] = useState(false);
   const [newTaskTitle, setNewTaskTitle] = useState('');
 
+  // Handle form submission
   const handleSubmit = (e) => {
     e.preventDefault();
     if (newTaskTitle.trim()) {
@@ -47,7 +49,7 @@ const TaskList = ({
             onComplete={onTaskComplete}
             onEdit={onTaskEdit}
             onDelete={onTaskDelete}
-            onAddSubtask={onSubtaskAdd} // Pass the prop to Task component
+            onAddSubtask={onSubtaskAdd} 
             onMoveLeft={onMoveLeft}
             onMoveRight={onMoveRight}
             listId={listId}
@@ -102,7 +104,7 @@ TaskList.propTypes = {
   onTaskComplete: PropTypes.func.isRequired,
   onTaskEdit: PropTypes.func.isRequired,
   onTaskDelete: PropTypes.func.isRequired,
-  onSubtaskAdd: PropTypes.func.isRequired, // Updated prop name and made it required
+  onSubtaskAdd: PropTypes.func.isRequired, 
   type: PropTypes.string.isRequired,
   onMoveLeft: PropTypes.func.isRequired,
   onMoveRight: PropTypes.func.isRequired,
