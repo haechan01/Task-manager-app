@@ -24,14 +24,14 @@ https://www.loom.com/share/057232bf74134a328771506ef249b411?sid=7cd894ae-88bc-45
 ### User Authentication
 
 - **Secure Signup and Login**
-  - Passwords are hashed and stored securely.
-  - User sessions are managed via JWT tokens.
+  - Passwords are hashed and stored securely to prevent unauthorized access.
+  - User sessions are managed via JWT tokens, enabling stateless authentication.
 - **JWT-based Authentication**
-  - Stateless authentication using JSON Web Tokens.
-  - Tokens are stored in HTTP-only cookies for security.
+  - JSON Web Tokens are used for stateless authentication, providing scalability and efficiency.
+  - Tokens are stored in HTTP-only cookies for enhanced security and to mitigate XSS attacks.
 - **Protected Routes**
-  - Backend routes are protected and require valid JWT tokens.
-  - Frontend routes are guarded using React Router.
+  - Backend routes are protected by requiring a valid JWT token for access, ensuring only authenticated users can interact with protected resources.
+  - Frontend routes are also guarded using React Router, preventing unauthorized users from accessing restricted pages.
 
 ### Task Management
 
